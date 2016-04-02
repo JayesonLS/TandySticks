@@ -5,6 +5,8 @@
   This file is hereby placed in the public domain.
 */
 
+// TODO: Debounce buttons.
+
 #include "TandyStick.h"
 
 static const unsigned long UPDATE_PERIOD = 8333;            // 1/120th of a second.

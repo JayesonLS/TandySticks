@@ -25,7 +25,7 @@
 
 #define JOYSTICK_REPORT_ID  0x03
 #define JOYSTICK2_REPORT_ID 0x04
-#define JOYSTICK_STATE_SIZE 4
+#define JOYSTICK_STATE_SIZE 3
 
 static const uint8_t _hidReportDescriptor[] PROGMEM = {
   
@@ -35,14 +35,14 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     0xa1, 0x01,               // COLLECTION (Application)
     0x85, JOYSTICK_REPORT_ID, // REPORT_ID (3)
 
-    // 16 Buttons
+    // 2 Buttons
     0x05, 0x09,               //   USAGE_PAGE (Button)
     0x19, 0x01,               //   USAGE_MINIMUM (Button 1)
-    0x29, 0x10,               //   USAGE_MAXIMUM (Button 16)
+    0x29, 0x02,               //   USAGE_MAXIMUM (Button 2)
     0x15, 0x00,               //   LOGICAL_MINIMUM (0)
     0x25, 0x01,               //   LOGICAL_MAXIMUM (1)
     0x75, 0x01,               //   REPORT_SIZE (1)
-    0x95, 0x10,               //   REPORT_COUNT (16)
+    0x95, 0x08,               //   REPORT_COUNT (8)
     0x55, 0x00,               //   UNIT_EXPONENT (0)
     0x65, 0x00,               //   UNIT (None)
     0x81, 0x02,               //   INPUT (Data,Var,Abs)
@@ -67,14 +67,14 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     0xa1, 0x01,                // COLLECTION (Application)
     0x85, JOYSTICK2_REPORT_ID, // REPORT_ID (4)
 
-    // 16 Buttons
+    // 2 Buttons
     0x05, 0x09,                //   USAGE_PAGE (Button)
     0x19, 0x01,                //   USAGE_MINIMUM (Button 1)
-    0x29, 0x10,                //   USAGE_MAXIMUM (Button 16)
+    0x29, 0x02,                //   USAGE_MAXIMUM (Button 2)
     0x15, 0x00,                //   LOGICAL_MINIMUM (0)
     0x25, 0x01,                //   LOGICAL_MAXIMUM (1)
     0x75, 0x01,                //   REPORT_SIZE (1)
-    0x95, 0x10,                //   REPORT_COUNT (16)
+    0x95, 0x08,                //   REPORT_COUNT (8)
     0x55, 0x00,                //   UNIT_EXPONENT (0)
     0x65, 0x00,                //   UNIT (None)
     0x81, 0x02,                //   INPUT (Data,Var,Abs)
@@ -162,12 +162,9 @@ void Joystick_::sendState()
     uint16_t buttonTmp = buttons;
 
     // Split 16 bit button-state into 2 bytes
-    data[0] = buttonTmp & 0xFF;        
-    buttonTmp >>= 8;
-    data[1] = buttonTmp & 0xFF;
-
-    data[2] = xAxis;
-    data[3] = yAxis;
+    data[0] = buttons;        
+    data[1] = xAxis;
+    data[2] = yAxis;
 
     // HID().SendReport(Report number, array of values in same order as HID descriptor, length)
     HID().SendReport(JOYSTICK_REPORT_ID + joystickId, data, JOYSTICK_STATE_SIZE);

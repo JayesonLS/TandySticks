@@ -163,7 +163,6 @@ void TandyStick::ProcessAnalog(int8_t &xOut, int8_t &yOut)
     yOut = CalculateAxisValue(combinedYRead, combinedDetectRead);
 }
 
-
 // Values read from analog inputs are in range 0 to accumulatedDetectValue and need to be converted
 // to the range -127 to 127.
 // It is perhaps possible for noise to cause axis value to be greater than the detect value,

@@ -42,7 +42,7 @@ private:
 	bool     autoSendState;
 	int8_t	 xAxis;
 	int8_t	 yAxis;
-	uint16_t buttons;
+	uint8_t  buttons;
 
 public:
 	Joystick_(uint8_t initJoystickId);
