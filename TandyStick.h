@@ -43,7 +43,9 @@ private:
   bool mHadButton1Down;
   bool mHadButton1Up;
 
+  void ProcessAnalog(int8_t &xOut, int8_t &yOut);
   int8_t  CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue);
+  void SendToJoystick(int8_t x, int8_t y, bool button0Down, bool button1Down);
   
 public:
   static int sUpdatesBeforeDisconnect;

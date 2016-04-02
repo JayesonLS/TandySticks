@@ -50,7 +50,7 @@ void loop() {
   signed long updateDelta = (signed long)(micros() - sNextUpdateEnd);
   if (updateDelta < (UPDATE_PERIOD / 2))
   {
-      sNextUpdateEnd += UPDATE_PERIOD;
+    sNextUpdateEnd += UPDATE_PERIOD;
   }
   else
   {

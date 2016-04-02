@@ -105,9 +105,31 @@ void TandyStick::EndUpdate()
     mUpdatesSinceLastDetection++;
     mHadPositiveDetection = true;
   }
+
+  int8_t x;
+  int8_t y;
+  bool button0Down;
+  bool button1Down;
   
   if (mHadPositiveDetection)
   {
+    ProcessAnalog(x, y);
+    button0Down = mHadButton0Down;
+    button1Down = mHadButton1Down;
+  }
+  else
+  {
+    x = 0;
+    y = 0;
+    button0Down = false;
+    button1Down = false;
+  }
+
+  SendToJoystick(x, y, button0Down, button1Down);
+}
+
+void TandyStick::ProcessAnalog(int8_t &xOut, int8_t &yOut)
+{
     // Push back all the previous frame values, averaging as we go.
     long combinedXRead = mAccumulatedXRead;
     long combinedYRead = mAccumulatedYRead;
@@ -132,29 +154,10 @@ void TandyStick::EndUpdate()
     mPreviousYReads[0] = mAccumulatedYRead;
     mPreviousDetectReads[0] = mAccumulatedDetectRead;
     
-    mJoystick->setXAxis(CalculateAxisValue(combinedXRead, combinedDetectRead));
-    mJoystick->setYAxis(CalculateAxisValue(combinedYRead, combinedDetectRead));
-
-    if (mHadButton0Down)
-      mJoystick->pressButton(0);
-    else
-      mJoystick->releaseButton(0);
-      
-    if (mHadButton1Down)
-      mJoystick->pressButton(1);
-    else
-      mJoystick->releaseButton(1);
-  }
-  else
-  {
-    mJoystick->setXAxis(0);
-    mJoystick->setYAxis(0);
-    mJoystick->releaseButton(0);
-    mJoystick->releaseButton(1);
-  }
- 
-  mJoystick->sendState();
+    xOut = CalculateAxisValue(combinedXRead, combinedDetectRead);
+    yOut = CalculateAxisValue(combinedYRead, combinedDetectRead);
 }
+
 
 // Values read from analog inputs are in range 0 to accumulatedDetectValue and need to be converted
 // to the range -127 to 127.
@@ -180,5 +183,23 @@ int8_t TandyStick::CalculateAxisValue(long accumulatedAxisValues, long accumulat
   return (int8_t)value;
 }
 
+void TandyStick::SendToJoystick(int8_t x, int8_t y, bool button0Down, bool button1Down)
+{
+  mJoystick->setXAxis(x);
+  mJoystick->setYAxis(y);
+ 
+  if (button0Down)
+    mJoystick->pressButton(0);
+  else
+    mJoystick->releaseButton(0);
+    
+  if (button1Down)
+    mJoystick->pressButton(1);
+  else
+    mJoystick->releaseButton(1);
+
+  mJoystick->sendState();
+
+}
 
 
