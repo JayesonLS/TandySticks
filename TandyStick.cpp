@@ -7,6 +7,10 @@
 
 #include "TandyStick.h"
 
+int TandyStick::sUpdatesBeforeDisconnect = 1;
+int TandyStick::sUpdatesToAverage = 1;
+int TandyStick::sUpdatesForDebounce = 1;
+
 TandyStick::TandyStick(Joystick_ *joystick, 
                        uint8_t xAxisAnalogPin, 
                        uint8_t yAxisAnalogPin, 
@@ -20,6 +24,24 @@ TandyStick::TandyStick(Joystick_ *joystick,
   mDetectAnalogPin = detectAnalogPin;
   mButton0DigitalPin = button0DigitalPin; 
   mButton1DigitalPin = button1DigitalPin;
+
+  memset(mPreviousXReads, 0, sizeof(mPreviousXReads));
+  memset(mPreviousYReads, 0, sizeof(mPreviousYReads));
+  memset(mPreviousDetectReads, 0, sizeof(mPreviousDetectReads));
+  mUpdatesSinceLastDetection = 0;
+  mButton0Down = false;
+  mUpdatesSinceLastButton0Latch = 0;
+  mButton1Down = false;
+  mUpdatesSinceLastButton1Latch = 0;
+
+  mAccumulatedXRead = 0;
+  mAccumulatedYRead = 0;
+  mAccumulatedDetectRead = 0; 
+  mHadPositiveDetection = false;
+  mHadButton0Down = false;
+  mHadButton0Up = false;
+  mHadButton1Down = false;
+  mHadButton1Up = false;
 }
 
 void TandyStick::Setup()
@@ -32,42 +54,96 @@ void TandyStick::Setup()
 
 void TandyStick::BeginUpdate()
 {
-  
+  mAccumulatedXRead = 0;
+  mAccumulatedYRead = 0;
+  mAccumulatedDetectRead = 0; 
+  mHadPositiveDetection = false;
+  mHadButton0Down = false;
+  mHadButton0Up = false;
+  mHadButton1Down = false;
+  mHadButton1Up = false;
 }
 
 void TandyStick::TickUpdate()
 {
+  int detectRead = analogRead(mDetectAnalogPin);
+  mAccumulatedXRead += analogRead(mXAxisAnalogPin);
+  mAccumulatedYRead += analogRead(mYAxisAnalogPin);
+  mAccumulatedDetectRead += detectRead;
+  if (detectRead < 1023)
+  {
+    mHadPositiveDetection = true;
+  }
+
+  int button0Value = digitalRead(mButton0DigitalPin);
+  if (button0Value == LOW)
+  {
+    mHadButton0Down = true;
+  }
+  else
+  {
+    mHadButton0Up = true;
+  }
   
+  int button1Value = digitalRead(mButton1DigitalPin);
+  if (button1Value == LOW)
+  {
+    mHadButton1Down = true;
+  }
+  else
+  {
+    mHadButton1Up = true;
+  }
 }
 
 void TandyStick::EndUpdate()
 {
-  long detectValue = analogRead(mDetectAnalogPin);
-  long xAxisValue = analogRead(mXAxisAnalogPin);
-  long yAxisValue = analogRead(mYAxisAnalogPin);
-  int button0Value = digitalRead(mButton0DigitalPin);
-  int button1Value = digitalRead(mButton1DigitalPin);
+  if (mHadPositiveDetection)
+  {
+    // Push back all the previous frame values, averaging as we go.
+    long combinedXRead = mAccumulatedXRead;
+    long combinedYRead = mAccumulatedYRead;
+    long combinedDetectRead = mAccumulatedDetectRead;
 
-  if (detectValue == 1023)
+    for (int i = sUpdatesToAverage - 1; i >= 0; i--)
+    {
+      long tmp = mPreviousXReads[i];
+      combinedXRead += tmp;
+      mPreviousXReads[i + 1] = tmp;
+      
+      tmp = mPreviousYReads[i];
+      combinedYRead += tmp;
+      mPreviousYReads[i + 1] = tmp;
+
+      tmp = mPreviousDetectReads[i];
+      combinedDetectRead += tmp;
+      mPreviousDetectReads[i + 1] = tmp;
+    }
+    
+    mPreviousXReads[0] = mAccumulatedXRead;
+    mPreviousYReads[0] = mAccumulatedYRead;
+    mPreviousDetectReads[0] = mAccumulatedDetectRead;
+    
+    mJoystick->setXAxis(CalculateAxisValue(combinedXRead, combinedDetectRead));
+    mJoystick->setYAxis(CalculateAxisValue(combinedYRead, combinedDetectRead));
+
+    if (mHadButton0Down)
+      mJoystick->pressButton(0);
+    else
+      mJoystick->releaseButton(0);
+      
+    if (mHadButton1Down)
+      mJoystick->pressButton(1);
+    else
+      mJoystick->releaseButton(1);
+  }
+  else
   {
     mJoystick->setXAxis(0);
     mJoystick->setYAxis(0);
-  }
-  else
-  {
-    mJoystick->setXAxis(CalculateAxisValue(xAxisValue, detectValue));
-    mJoystick->setYAxis(CalculateAxisValue(yAxisValue, detectValue));
-  }
-  
-  if (button0Value == LOW)
-    mJoystick->pressButton(0);
-  else
     mJoystick->releaseButton(0);
-    
-  if (button1Value == LOW)
-    mJoystick->pressButton(1);
-  else
     mJoystick->releaseButton(1);
+  }
  
   mJoystick->sendState();
 }
