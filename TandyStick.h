@@ -33,6 +33,11 @@ private:
   bool mButton1Down;
   int mUpdatesSinceLastButton1Latch;
 
+  uint8_t mLastXSent;
+  uint8_t mLastYSent;
+  bool mLastButton0DownSent;
+  bool mLastButton1DownSent;
+  
   // Tracking of values during an update.
   long mAccumulatedXRead;
   long mAccumulatedYRead;

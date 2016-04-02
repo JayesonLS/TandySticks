@@ -34,6 +34,11 @@ TandyStick::TandyStick(Joystick_ *joystick,
   mButton1Down = false;
   mUpdatesSinceLastButton1Latch = 0;
 
+  mLastXSent = -128; // Not a value that can be generated, will force a send.
+  mLastYSent = -128;
+  mLastButton0DownSent = false;
+  mLastButton1DownSent = false;
+
   mAccumulatedXRead = 0;
   mAccumulatedYRead = 0;
   mAccumulatedDetectRead = 0; 
@@ -185,21 +190,31 @@ int8_t TandyStick::CalculateAxisValue(long accumulatedAxisValues, long accumulat
 
 void TandyStick::SendToJoystick(int8_t x, int8_t y, bool button0Down, bool button1Down)
 {
-  mJoystick->setXAxis(x);
-  mJoystick->setYAxis(y);
- 
-  if (button0Down)
-    mJoystick->pressButton(0);
-  else
-    mJoystick->releaseButton(0);
-    
-  if (button1Down)
-    mJoystick->pressButton(1);
-  else
-    mJoystick->releaseButton(1);
-
-  mJoystick->sendState();
-
+  if (x != mLastXSent || 
+      y != mLastYSent || 
+      button0Down != mLastButton0DownSent ||
+      button1Down != mLastButton1DownSent)
+  {     
+    mLastXSent = x;
+    mLastYSent = y;
+    mLastButton0DownSent = button0Down;
+    mLastButton1DownSent = button1Down;
+  
+    mJoystick->setXAxis(x);
+    mJoystick->setYAxis(y);
+   
+    if (button0Down)
+      mJoystick->pressButton(0);
+    else
+      mJoystick->releaseButton(0);
+      
+    if (button1Down)
+      mJoystick->pressButton(1);
+    else
+      mJoystick->releaseButton(1);
+  
+    mJoystick->sendState();
+  }
 }
 
 
