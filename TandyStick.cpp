@@ -73,6 +73,7 @@ void TandyStick::TickUpdate()
   if (detectRead < 1023)
   {
     mHadPositiveDetection = true;
+    mUpdatesSinceLastDetection = 0;
   }
 
   int button0Value = digitalRead(mButton0DigitalPin);
@@ -98,6 +99,13 @@ void TandyStick::TickUpdate()
 
 void TandyStick::EndUpdate()
 {
+  // Force positive detection until timeout has expired.
+  if (!mHadPositiveDetection && mUpdatesSinceLastDetection < sUpdatesBeforeDisconnect)
+  {
+    mUpdatesSinceLastDetection++;
+    mHadPositiveDetection = true;
+  }
+  
   if (mHadPositiveDetection)
   {
     // Push back all the previous frame values, averaging as we go.

@@ -8,7 +8,7 @@
 #include "TandyStick.h"
 
 static const unsigned long UPDATE_PERIOD = 8333;            // 1/120th of a second.
-static const int           UPDATES_BEFORE_DISCONNECT = 120; // 1 second delay after last detection.
+static const int           UPDATES_BEFORE_DISCONNECT = 12;  // 1/10th second delay after last detection.
 static const int           UPDATES_TO_AVERAGE = 3;          // 1/60th of a second.
 static const int           UPDATES_FOR_DEBOUNCE = 6;        // 1/20th of a second - max press rate is 10 per second.
 
