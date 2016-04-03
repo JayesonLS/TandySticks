@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DIN_6
+D 6 pins connector, Tandy Joystick
+K CONN DIN 6-pins 
+$ENDCMP
+#
+#End Doc Library
