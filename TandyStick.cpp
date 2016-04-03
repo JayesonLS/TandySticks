@@ -113,54 +113,48 @@ void TandyStick::EndUpdate()
 
   int8_t x;
   int8_t y;
-  bool button0Down;
-  bool button1Down;
+  ProcessAnalog(mHadPositiveDetection, x, y);
   
-  if (mHadPositiveDetection)
-  {
-    ProcessAnalog(x, y);
-    button0Down = mHadButton0Down;
-    button1Down = mHadButton1Down;
-  }
-  else
-  {
-    x = 0;
-    y = 0;
-    button0Down = false;
-    button1Down = false;
-  }
+  bool button0Down = ProcessButton(mHadPositiveDetection, mHadButton0Down, mHadButton0Up, mButton0Down, mUpdatesSinceLastButton0Latch);
+  bool button1Down = ProcessButton(mHadPositiveDetection, mHadButton1Down, mHadButton1Up, mButton1Down, mUpdatesSinceLastButton1Latch);
 
   SendToJoystick(x, y, button0Down, button1Down);
 }
 
-void TandyStick::ProcessAnalog(int8_t &xOut, int8_t &yOut)
+void TandyStick::ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut)
 {
-    // Push back all the previous frame values, averaging as we go.
-    long combinedXRead = mAccumulatedXRead;
-    long combinedYRead = mAccumulatedYRead;
-    long combinedDetectRead = mAccumulatedDetectRead;
+  if (!stickConnected)
+  {
+      // Force stick to center. Previous-frame averaging will still be applied.
+      mAccumulatedXRead = mAccumulatedYRead = mAccumulatedDetectRead / 2;
+  }
 
-    for (int i = sUpdatesToAverage - 1; i >= 0; i--)
-    {
-      long tmp = mPreviousXReads[i];
-      combinedXRead += tmp;
-      mPreviousXReads[i + 1] = tmp;
-      
-      tmp = mPreviousYReads[i];
-      combinedYRead += tmp;
-      mPreviousYReads[i + 1] = tmp;
+  // Push back all the previous frame values, averaging as we go.
+  long combinedXRead = mAccumulatedXRead;
+  long combinedYRead = mAccumulatedYRead;
+  long combinedDetectRead = mAccumulatedDetectRead;
 
-      tmp = mPreviousDetectReads[i];
-      combinedDetectRead += tmp;
-      mPreviousDetectReads[i + 1] = tmp;
-    }
+  for (int i = sUpdatesToAverage - 1; i >= 0; i--)
+  {
+    long tmp = mPreviousXReads[i];
+    combinedXRead += tmp;
+    mPreviousXReads[i + 1] = tmp;
     
-    mPreviousXReads[0] = mAccumulatedXRead;
-    mPreviousYReads[0] = mAccumulatedYRead;
-    mPreviousDetectReads[0] = mAccumulatedDetectRead;
-    
-    xOut = CalculateAxisValue(combinedXRead, combinedDetectRead);
-    yOut = CalculateAxisValue(combinedYRead, combinedDetectRead);
+    tmp = mPreviousYReads[i];
+    combinedYRead += tmp;
+    mPreviousYReads[i + 1] = tmp;
+
+    tmp = mPreviousDetectReads[i];
+    combinedDetectRead += tmp;
+    mPreviousDetectReads[i + 1] = tmp;
+  }
+  
+  mPreviousXReads[0] = mAccumulatedXRead;
+  mPreviousYReads[0] = mAccumulatedYRead;
+  mPreviousDetectReads[0] = mAccumulatedDetectRead;
+  
+  xOut = CalculateAxisValue(combinedXRead, combinedDetectRead);
+  yOut = CalculateAxisValue(combinedYRead, combinedDetectRead);
 }
 
 // Values read from analog inputs are in range 0 to accumulatedDetectValue and need to be converted
@@ -185,6 +179,39 @@ int8_t TandyStick::CalculateAxisValue(long accumulatedAxisValues, long accumulat
     value = 127;
   }
   return (int8_t)value;
+}
+
+bool TandyStick::ProcessButton(bool stickConnected, bool hadButtonDown, bool hadButtonUp, bool &buttonLatchedDown, int &updatesSinceLastButtonLatch)
+{
+  if (stickConnected)
+  {
+    if (updatesSinceLastButtonLatch < sUpdatesForDebounce)
+    {
+      updatesSinceLastButtonLatch++;
+    }
+    else
+    {
+      if (buttonLatchedDown && hadButtonUp)
+      {
+        buttonLatchedDown = false;
+        updatesSinceLastButtonLatch = 0;
+      }
+      else if (!buttonLatchedDown && hadButtonDown)
+      {
+        buttonLatchedDown = true;
+        updatesSinceLastButtonLatch = 0;
+      }
+    }
+
+    return buttonLatchedDown;
+  }
+  else
+  {
+    // Stick disconnected, reset all values.
+    buttonLatchedDown = false;
+    updatesSinceLastButtonLatch = 0;
+    return false; 
+  }
 }
 
 void TandyStick::SendToJoystick(int8_t x, int8_t y, bool button0Down, bool button1Down)

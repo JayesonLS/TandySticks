@@ -48,8 +48,9 @@ private:
   bool mHadButton1Down;
   bool mHadButton1Up;
 
-  void ProcessAnalog(int8_t &xOut, int8_t &yOut);
+  void ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut);
   int8_t  CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue);
+  bool ProcessButton(bool stickConnected, bool hadButtonDown, bool hadButtonUp, bool &buttonLatchedDown, int &updatesSinceLastButtonLatch);
   void SendToJoystick(int8_t x, int8_t y, bool button0Down, bool button1Down);
   
 public:
