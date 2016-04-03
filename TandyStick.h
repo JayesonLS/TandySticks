@@ -48,6 +48,7 @@ private:
   bool mHadButton1Down;
   bool mHadButton1Up;
 
+  int BiasedAnalogRead(uint8_t analogPin);
   void ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut);
   int8_t  CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue);
   bool ProcessButton(bool stickConnected, bool hadButtonDown, bool hadButtonUp, bool &buttonLatchedDown, int &updatesSinceLastButtonLatch);
@@ -57,6 +58,7 @@ public:
   static int sUpdatesBeforeDisconnect;
   static int sUpdatesToAverage;
   static int sUpdatesForDebounce;
+  static int sAnalogBias;
 
   TandyStick(Joystick_ *joystick, 
              uint8_t xAxisAnalogPin, 

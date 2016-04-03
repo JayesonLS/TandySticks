@@ -10,6 +10,7 @@
 int TandyStick::sUpdatesBeforeDisconnect = 1;
 int TandyStick::sUpdatesToAverage = 1;
 int TandyStick::sUpdatesForDebounce = 1;
+int TandyStick::sAnalogBias = 0;
 
 TandyStick::TandyStick(Joystick_ *joystick, 
                        uint8_t xAxisAnalogPin, 
@@ -71,11 +72,11 @@ void TandyStick::BeginUpdate()
 
 void TandyStick::TickUpdate()
 {
-  int detectRead = analogRead(mDetectAnalogPin);
-  mAccumulatedXRead += analogRead(mXAxisAnalogPin);
-  mAccumulatedYRead += analogRead(mYAxisAnalogPin);
+  int detectRead = BiasedAnalogRead(mDetectAnalogPin);
+  mAccumulatedXRead += BiasedAnalogRead(mXAxisAnalogPin);
+  mAccumulatedYRead += BiasedAnalogRead(mYAxisAnalogPin);
   mAccumulatedDetectRead += detectRead;
-  if (detectRead < 1023)
+  if (detectRead < (1023 - sAnalogBias)) // If no stick is connected, the 100 ohm resistor will pull the input up to 5v.
   {
     mHadPositiveDetection = true;
     mUpdatesSinceLastDetection = 0;
@@ -119,6 +120,17 @@ void TandyStick::EndUpdate()
   bool button1Down = ProcessButton(mHadPositiveDetection, mHadButton1Down, mHadButton1Up, mButton1Down, mUpdatesSinceLastButton1Latch);
 
   SendToJoystick(x, y, button0Down, button1Down);
+}
+
+int TandyStick::BiasedAnalogRead(uint8_t analogPin)
+{
+  int value = analogRead(analogPin);
+  value -= sAnalogBias;
+  if (value < 0)
+  {
+    value = 0;
+  }
+  return value;
 }
 
 void TandyStick::ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut)

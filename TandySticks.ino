@@ -25,6 +25,7 @@ void setup()
   TandyStick::sUpdatesBeforeDisconnect = UPDATES_BEFORE_DISCONNECT;
   TandyStick::sUpdatesToAverage = UPDATES_TO_AVERAGE;
   TandyStick::sUpdatesForDebounce = UPDATES_FOR_DEBOUNCE;
+  TandyStick::sAnalogBias = 1023L * 100L / 5000L; // The Coco can only read down to about 100mV (0 = 100mV or less).
 
   stick0.Setup();
   stick1.Setup();

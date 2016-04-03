@@ -10,7 +10,7 @@ All content is provided as-is and is used at your own risk. See LICENSE for full
 *The prototype adapter was built using a very inexpensive Pro Micro clone microcontroller
 board purchased through eBay. Some later investigation discovered that the price, including
 postage, is in fact less than the wholesale, volume pricing of just a single component 
-(the ATMEGA32U microcontroller). If purchasing, consider that the source country may not 
+(the ATMEGA32U4 microcontroller). If purchasing, consider that the source country may not 
 offer the same recourse as your country in the event of damages relating to a possibly 
 counterfeit or defective product.*
 
@@ -35,11 +35,11 @@ and false disconnects. When a physical joystick is not connected to the adapter,
 still shows as being connected on the host computer. However the joystick values will be 
 locked to dead center.
 
-Performance varies with individual joysticks. During development, two Tandy Deluxe Joystick's
-were used. One joystick performed very well, with little jitter, although did not consistently
-register full top left. The second would only output a partial left, and the output in that
-position was extremely jittery. In some Coco games, such as Sailor Main, it was not possible 
-to reliably move left with this joystick. 
+Performance varies with individual joysticks. During development, two Tandy Deluxe Joysticks
+were used. One joystick performed very well with little jitter. The second could not be 
+adjusted to be able to output full left and right with the same adjustment setting. The output 
+in the left position was extremely jittery. In some Coco games, such as Sailor Main, it was not
+possible to reliably move both left and right with this joystick. 
 
 Cleaning a joystick's potentiometers with contact cleaner may improve performance. Alternatively, 
 calibrating the joystick limits in Windows may provide a solution for poorly performing joysticks.
