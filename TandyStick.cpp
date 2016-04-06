@@ -8,8 +8,9 @@
 #include "TandyStick.h"
 
 int TandyStick::sUpdatesBeforeDisconnect = 1;
-int TandyStick::sUpdatesToAverage = 1;
+int TandyStick::sPreviousUpdatesToAverageIn = 0;
 int TandyStick::sUpdatesForDebounce = 1;
+int TandyStick::sAnalogRange = 127;
 int TandyStick::sAnalogBias = 0;
 
 TandyStick::TandyStick(Joystick_ *joystick, 
@@ -48,6 +49,7 @@ TandyStick::TandyStick(Joystick_ *joystick,
   mHadButton0Up = false;
   mHadButton1Down = false;
   mHadButton1Up = false;
+  mNumUpdateTicks = 0;
 }
 
 void TandyStick::Setup()
@@ -68,15 +70,16 @@ void TandyStick::BeginUpdate()
   mHadButton0Up = false;
   mHadButton1Down = false;
   mHadButton1Up = false;
+  mNumUpdateTicks = 0;
 }
 
 void TandyStick::TickUpdate()
 {
-  int detectRead = BiasedAnalogRead(mDetectAnalogPin);
-  mAccumulatedXRead += BiasedAnalogRead(mXAxisAnalogPin);
-  mAccumulatedYRead += BiasedAnalogRead(mYAxisAnalogPin);
+  int detectRead = analogRead(mDetectAnalogPin);
+  mAccumulatedXRead += analogRead(mXAxisAnalogPin);
+  mAccumulatedYRead += analogRead(mYAxisAnalogPin);
   mAccumulatedDetectRead += detectRead;
-  if (detectRead < (1023 - sAnalogBias)) // If no stick is connected, the 100 ohm resistor will pull the input up to 5v.
+  if (detectRead < 1023) // If no stick is connected, the 100 ohm resistor will pull the input up to 5v.
   {
     mHadPositiveDetection = true;
     mUpdatesSinceLastDetection = 0;
@@ -101,6 +104,8 @@ void TandyStick::TickUpdate()
   {
     mHadButton1Up = true;
   }
+
+  mNumUpdateTicks++;
 }
 
 void TandyStick::EndUpdate()
@@ -122,23 +127,13 @@ void TandyStick::EndUpdate()
   SendToJoystick(x, y, button0Down, button1Down);
 }
 
-int TandyStick::BiasedAnalogRead(uint8_t analogPin)
-{
-  int value = analogRead(analogPin);
-  value -= sAnalogBias;
-  if (value < 0)
-  {
-    value = 0;
-  }
-  return value;
-}
-
 void TandyStick::ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut)
 {
   if (!stickConnected)
   {
       // Force stick to center. Previous-frame averaging will still be applied.
-      mAccumulatedXRead = mAccumulatedYRead = mAccumulatedDetectRead / 2;
+      xOut = yOut = 0;
+      return;
   }
 
   // Push back all the previous frame values, averaging as we go.
@@ -146,7 +141,7 @@ void TandyStick::ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut)
   long combinedYRead = mAccumulatedYRead;
   long combinedDetectRead = mAccumulatedDetectRead;
 
-  for (int i = sUpdatesToAverage - 1; i >= 0; i--)
+  for (int i = sPreviousUpdatesToAverageIn - 1; i >= 0; i--)
   {
     long tmp = mPreviousXReads[i];
     combinedXRead += tmp;
@@ -181,15 +176,20 @@ int8_t TandyStick::CalculateAxisValue(long accumulatedAxisValues, long accumulat
   {
     accumulatedDetectValue = 1;
   }
-  int value = (int)(accumulatedAxisValues * 255 / accumulatedDetectValue) - 127;
-  if (value < -127)
+
+  long longRange = (long)sAnalogRange;
+  long biasedRange = (long)(sAnalogRange + sAnalogBias);
+  long value = accumulatedAxisValues * (biasedRange + 1L) * 2L / accumulatedDetectValue - biasedRange;
+  long savedValue = value;
+  if (value < -longRange)
   {
-    value = -127;
+    value = -longRange;
   }
-  else if (value > 127)
+  else if (value > longRange)
   {
-    value = 127;
+    value = longRange;
   }
+
   return (int8_t)value;
 }
 
