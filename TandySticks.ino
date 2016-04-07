@@ -28,7 +28,7 @@ void setup()
   TandyStick::sUpdatesBeforeDisconnect = UPDATES_BEFORE_DISCONNECT;
   TandyStick::sPreviousUpdatesToAverageIn = PREVIOUS_UPDATES_TO_AVERAGE_IN;
   TandyStick::sUpdatesForDebounce = UPDATES_FOR_DEBOUNCE;
-  TandyStick::sAnalogRange = 127;
+  TandyStick::sAnalogRange = 511;
 
   // Bias results vary between Coco versions. Three Coco examples were tested with the following results:
   //

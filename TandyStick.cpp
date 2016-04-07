@@ -36,8 +36,8 @@ TandyStick::TandyStick(Joystick_ *joystick,
   mButton1Down = false;
   mUpdatesSinceLastButton1Latch = 0;
 
-  mLastXSent = -128; // Not a value that can be generated, will force a send.
-  mLastYSent = -128;
+  mLastXSent = -512; // Not a value that can be generated, will force a send.
+  mLastYSent = -512;
   mLastButton0DownSent = false;
   mLastButton1DownSent = false;
 
@@ -117,8 +117,8 @@ void TandyStick::EndUpdate()
     mHadPositiveDetection = true;
   }
 
-  int8_t x;
-  int8_t y;
+  int16_t x;
+  int16_t y;
   ProcessAnalog(mHadPositiveDetection, x, y);
   
   bool button0Down = ProcessButton(mHadPositiveDetection, mHadButton0Down, mHadButton0Up, mButton0Down, mUpdatesSinceLastButton0Latch);
@@ -127,7 +127,7 @@ void TandyStick::EndUpdate()
   SendToJoystick(x, y, button0Down, button1Down);
 }
 
-void TandyStick::ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut)
+void TandyStick::ProcessAnalog(bool stickConnected, int16_t &xOut, int16_t &yOut)
 {
   if (!stickConnected)
   {
@@ -170,7 +170,7 @@ void TandyStick::ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut)
 // but we have the value clamping just in case. Likewise, we avoid divide by zero, which 
 // could perhaps happen if the detect is not connected. Garbage values will occur, but it is
 // perhaps better than finding out what happens on divide by zero.
-int8_t TandyStick::CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue)
+int16_t TandyStick::CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue)
 {
   if (accumulatedDetectValue < 1)
   {
@@ -190,7 +190,7 @@ int8_t TandyStick::CalculateAxisValue(long accumulatedAxisValues, long accumulat
     value = longRange;
   }
 
-  return (int8_t)value;
+  return (int16_t)value;
 }
 
 bool TandyStick::ProcessButton(bool stickConnected, bool hadButtonDown, bool hadButtonUp, bool &buttonLatchedDown, int &updatesSinceLastButtonLatch)
@@ -226,7 +226,7 @@ bool TandyStick::ProcessButton(bool stickConnected, bool hadButtonDown, bool had
   }
 }
 
-void TandyStick::SendToJoystick(int8_t x, int8_t y, bool button0Down, bool button1Down)
+void TandyStick::SendToJoystick(int16_t x, int16_t y, bool button0Down, bool button1Down)
 {
   if (x != mLastXSent || 
       y != mLastYSent || 

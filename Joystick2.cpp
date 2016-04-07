@@ -25,7 +25,7 @@
 
 #define JOYSTICK_REPORT_ID  0x03
 #define JOYSTICK2_REPORT_ID 0x04
-#define JOYSTICK_STATE_SIZE 3
+#define JOYSTICK_STATE_SIZE 5
 
 static const uint8_t _hidReportDescriptor[] PROGMEM = {
   
@@ -50,13 +50,13 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     // X and Y Axis
     0x05, 0x01,               //   USAGE_PAGE (Generic Desktop)
     0x09, 0x01,               //   USAGE (Pointer)
-    0x15, 0x81,               //   LOGICAL_MINIMUM (-127)
-    0x25, 0x7f,               //   LOGICAL_MAXIMUM (127)
     0xA1, 0x00,               //   COLLECTION (Physical)
+    0x16, 0x01, 0xFE,         //     LOGICAL_MINIMUM (-511)
+    0x26, 0xFF, 0x01,         //     LOGICAL_MAXIMUM (511)
+    0x75, 0x10,               //     REPORT_SIZE (16)
+    0x95, 0x02,               //     REPORT_COUNT (2)
     0x09, 0x30,               //     USAGE (x)
     0x09, 0x31,               //     USAGE (y)
-    0x75, 0x08,               //     REPORT_SIZE (8)
-    0x95, 0x02,               //     REPORT_COUNT (2)
     0x81, 0x02,               //     INPUT (Data,Var,Abs)
     0xc0,                     //   END_COLLECTION
     0xc0,                     // END_COLLECTION
@@ -82,13 +82,13 @@ static const uint8_t _hidReportDescriptor[] PROGMEM = {
     // X and Y Axis
     0x05, 0x01,                //   USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                //   USAGE (Pointer)
-    0x15, 0x81,                //   LOGICAL_MINIMUM (-127)
-    0x25, 0x7f,                //   LOGICAL_MAXIMUM (127)
     0xA1, 0x00,                //   COLLECTION (Physical)
+    0x16, 0x01, 0xFE,          //     LOGICAL_MINIMUM (-511)
+    0x26, 0xFF, 0x01,          //     LOGICAL_MAXIMUM (511)
+    0x75, 0x10,                //     REPORT_SIZE (16)
+    0x95, 0x02,                //     REPORT_COUNT (2)
     0x09, 0x30,                //     USAGE (x)
     0x09, 0x31,                //     USAGE (y)
-    0x75, 0x08,                //     REPORT_SIZE (8)
-    0x95, 0x02,                //     REPORT_COUNT (2)
     0x81, 0x02,                //     INPUT (Data,Var,Abs)
     0xc0,                      //   END_COLLECTION
     0xc0                       // END_COLLECTION
@@ -145,12 +145,12 @@ void Joystick_::releaseButton(uint8_t button)
     if (autoSendState) sendState();
 }
 
-void Joystick_::setXAxis(int8_t value)
+void Joystick_::setXAxis(int16_t value)
 {
     xAxis = value;
     if (autoSendState) sendState();
 }
-void Joystick_::setYAxis(int8_t value)
+void Joystick_::setYAxis(int16_t value)
 {
     yAxis = value;
     if (autoSendState) sendState();
@@ -159,21 +159,21 @@ void Joystick_::setYAxis(int8_t value)
 void Joystick_::sendState()
 {
     int8_t data[JOYSTICK_STATE_SIZE];
-    uint16_t buttonTmp = buttons;
 
-    // Split 16 bit button-state into 2 bytes
     data[0] = buttons;        
-    data[1] = xAxis;
-    data[2] = yAxis;
+    data[1] = (int8_t)xAxis;
+    data[2] = (int8_t)(xAxis >> 8);
+    data[3] = (int8_t)yAxis;
+    data[4] = (int8_t)(yAxis >> 8);
 
     // HID().SendReport(Report number, array of values in same order as HID descriptor, length)
-    HID().SendReport(JOYSTICK_REPORT_ID + joystickId, data, JOYSTICK_STATE_SIZE);
+    HID().SendReport(joystickId, data, JOYSTICK_STATE_SIZE);
 }
 
 Joystick_ Joystick[2] =
 {
-    Joystick_(0),
-    Joystick_(1)
+    Joystick_(JOYSTICK_REPORT_ID),
+    Joystick_(JOYSTICK2_REPORT_ID)
 };
 
 #endif // defined(_USING_HID)

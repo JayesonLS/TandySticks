@@ -40,18 +40,18 @@ class Joystick_
 private:
 	uint8_t  joystickId;
 	bool     autoSendState;
-	int8_t	 xAxis;
-	int8_t	 yAxis;
+	int16_t	 xAxis;
+	int16_t	 yAxis;
 	uint8_t  buttons;
 
 public:
 	Joystick_(uint8_t initJoystickId);
 
-	void begin(bool initAutoSendState = true);
+	void begin(bool initAutoSendState);
 	void end();
 
-	void setXAxis(int8_t value);
-	void setYAxis(int8_t value);
+	void setXAxis(int16_t value);
+	void setYAxis(int16_t value);
 
 	void setButton(uint8_t button, uint8_t value);
 	void pressButton(uint8_t button);

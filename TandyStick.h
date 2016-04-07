@@ -33,8 +33,8 @@ private:
   bool mButton1Down;
   int mUpdatesSinceLastButton1Latch;
 
-  uint8_t mLastXSent;
-  uint8_t mLastYSent;
+  int16_t mLastXSent;
+  int16_t mLastYSent;
   bool mLastButton0DownSent;
   bool mLastButton1DownSent;
   
@@ -50,10 +50,10 @@ private:
   int mNumUpdateTicks;
 
   int BiasedAnalogRead(uint8_t analogPin);
-  void ProcessAnalog(bool stickConnected, int8_t &xOut, int8_t &yOut);
-  int8_t  CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue);
+  void ProcessAnalog(bool stickConnected, int16_t &xOut, int16_t &yOut);
+  int16_t  CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue);
   bool ProcessButton(bool stickConnected, bool hadButtonDown, bool hadButtonUp, bool &buttonLatchedDown, int &updatesSinceLastButtonLatch);
-  void SendToJoystick(int8_t x, int8_t y, bool button0Down, bool button1Down);
+  void SendToJoystick(int16_t x, int16_t y, bool button0Down, bool button1Down);
   
 public:
   static int sUpdatesBeforeDisconnect;
