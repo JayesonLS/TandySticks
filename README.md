@@ -35,14 +35,11 @@ and false disconnects. When a physical joystick is not connected to the adapter,
 still shows as being connected on the host computer. However the joystick values will be 
 locked to dead center.
 
-Performance varies with individual joysticks. During development, two Tandy Deluxe Joysticks
-were used. One joystick performed very well with little jitter. The second could not be 
-adjusted to be able to output full left and right with the same adjustment setting. The output 
-in the left position was extremely jittery. In some Coco games, such as Sailor Main, it was not
-possible to reliably move both left and right with this joystick. 
-
-Cleaning a joystick's potentiometers with contact cleaner may improve performance. Alternatively, 
-calibrating the joystick limits in Windows may provide a solution for poorly performing joysticks.
+The range of analog values output by this adapter match the average values measured 
+across several versions of real Tandy Color Computers. Performance can still vary 
+with individual joysticks. Some may not output the full range of values and some may 
+produce more jitter than others. Cleaning a joystick's potentiometers with contact 
+cleaner may improve performance. 
 
 ![Adaptor and Joysticks](Adaptor1.jpg)
 
