@@ -27,7 +27,7 @@
 
 #if !defined(_USING_HID)
 
-#warning "Using legacy HID core (non pluggable)"
+#warning "Using legacy HID core (non pluggable). Make sure the selected board is Leonardo or Micro and Arduino version is >= 1.6.6."
 
 #else // defined(_USING_HID)
 
