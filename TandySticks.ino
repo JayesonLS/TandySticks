@@ -8,6 +8,13 @@
   This file is hereby placed in the public domain.
 */
 
+// Uncomment one of these:
+
+#define HARDWARE_PUBLIC_DOMAIN_CIRCUIT
+//#define HARDWARE_PRODUCTION_PROTOTYPE
+//#define HARDWARE_PRODUCTION_BURGER
+//#define HARDWARE_PRODUCTION_SUPER
+
 #include "TandyStick.h"
 
 static const unsigned long UPDATE_PERIOD = 8333;                // 1/120th of a second.
@@ -15,13 +22,25 @@ static const int           UPDATES_BEFORE_DISCONNECT = 12;      // 1/10th second
 static const int           PREVIOUS_UPDATES_TO_AVERAGE_IN = 2;  // 3/120th of a second.
 static const int           UPDATES_FOR_DEBOUNCE = 6;            // 1/20th of a second - max press rate is 10 per second.
 
-TandyStick stick0(Joystick + 0, A3, A2, A6, 2, 3);
-TandyStick stick1(Joystick + 1, A1, A0, A7, 5, 7);
+#if defined(HARDWARE_PUBLIC_DOMAIN_CIRCUIT)
+  TandyStick stick0(Joystick + 0, A3, A2, A6, 2, 3);
+  TandyStick stick1(Joystick + 1, A1, A0, A7, 5, 7);
+#elif defined(HARDWARE_PRODUCTION_PROTOTYPE)
+  TandyStick stick0(Joystick + 0, A0, A1, A6, 2, 3);
+  TandyStick stick1(Joystick + 1, A2, A3, A7, 5, 7);
+#elif defined(HARDWARE_PRODUCTION_BURGER)
+  #error Not implemented yet!
+#elif defined(HARDWARE_PRODUCTION_SUPER)
+  #error Not implemented yet!
+#else
+  #error One (and only one) of the HARDWARE_ types at the top of this file must be uncommented.
+#endif
 
 unsigned long sNextUpdateEnd;
 
 void setup() 
 {
+  
   // Enable for logging.
   Serial.begin(38400);
 
