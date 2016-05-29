@@ -38,14 +38,14 @@
 class Joystick_
 {
 private:
-	uint8_t  joystickId;
+	HID_    *hid; 
 	bool     autoSendState;
 	int16_t	 xAxis;
 	int16_t	 yAxis;
 	uint8_t  buttons;
 
 public:
-	Joystick_(uint8_t initJoystickId);
+	Joystick_();
 
 	void begin(bool initAutoSendState);
 	void end();

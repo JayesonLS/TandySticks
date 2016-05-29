@@ -40,9 +40,8 @@ unsigned long sNextUpdateEnd;
 
 void setup() 
 {
-  
-  // Enable for logging.
-  Serial.begin(38400);
+  // Uncomment for logging.
+//  Serial.begin(38400);
 
   TandyStick::sUpdatesBeforeDisconnect = UPDATES_BEFORE_DISCONNECT;
   TandyStick::sPreviousUpdatesToAverageIn = PREVIOUS_UPDATES_TO_AVERAGE_IN;
