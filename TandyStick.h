@@ -42,7 +42,6 @@ private:
   long mAccumulatedXRead;
   long mAccumulatedYRead;
   long mAccumulatedDetectRead;
-  bool mHadPositiveDetection;
   bool mHadButton0Down;
   bool mHadButton0Up;
   bool mHadButton1Down;
@@ -50,6 +49,7 @@ private:
   int mNumUpdateTicks;
 
   int BiasedAnalogRead(uint8_t analogPin);
+  bool HadPositiveDetection();
   void ProcessAnalog(bool stickConnected, int16_t &xOut, int16_t &yOut);
   int16_t  CalculateAxisValue(long accumulatedAxisValues, long accumulatedDetectValue);
   bool ProcessButton(bool stickConnected, bool hadButtonDown, bool hadButtonUp, bool &buttonLatchedDown, int &updatesSinceLastButtonLatch);

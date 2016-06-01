@@ -85,7 +85,6 @@ void loop() {
     stick0.TickUpdate();
     stick1.TickUpdate();
   } while ((signed long)(sNextUpdateEnd - micros()) > 0);
-    
 
   stick0.EndUpdate();
   stick1.EndUpdate();

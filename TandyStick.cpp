@@ -43,8 +43,7 @@ TandyStick::TandyStick(Joystick_ *joystick,
 
   mAccumulatedXRead = 0;
   mAccumulatedYRead = 0;
-  mAccumulatedDetectRead = 0; 
-  mHadPositiveDetection = false;
+  mAccumulatedDetectRead = 0;
   mHadButton0Down = false;
   mHadButton0Up = false;
   mHadButton1Down = false;
@@ -65,7 +64,6 @@ void TandyStick::BeginUpdate()
   mAccumulatedXRead = 0;
   mAccumulatedYRead = 0;
   mAccumulatedDetectRead = 0; 
-  mHadPositiveDetection = false;
   mHadButton0Down = false;
   mHadButton0Up = false;
   mHadButton1Down = false;
@@ -79,11 +77,6 @@ void TandyStick::TickUpdate()
   mAccumulatedXRead += analogRead(mXAxisAnalogPin);
   mAccumulatedYRead += analogRead(mYAxisAnalogPin);
   mAccumulatedDetectRead += detectRead;
-  if (detectRead < 1023) // If no stick is connected, the 100 ohm resistor will pull the input up to 5v.
-  {
-    mHadPositiveDetection = true;
-    mUpdatesSinceLastDetection = 0;
-  }
 
   int button0Value = digitalRead(mButton0DigitalPin);
   if (button0Value == LOW)
@@ -110,21 +103,35 @@ void TandyStick::TickUpdate()
 
 void TandyStick::EndUpdate()
 {
-  // Force positive detection until timeout has expired.
-  if (!mHadPositiveDetection && mUpdatesSinceLastDetection < sUpdatesBeforeDisconnect)
+  bool hadPositiveDetection = HadPositiveDetection();
+  
+  if (hadPositiveDetection)
   {
+    mUpdatesSinceLastDetection = 0;
+  }
+  else if (mUpdatesSinceLastDetection < sUpdatesBeforeDisconnect)
+  {
+    // Force positive detection until timeout has expired.
     mUpdatesSinceLastDetection++;
-    mHadPositiveDetection = true;
+    hadPositiveDetection = true;
   }
 
   int16_t x;
   int16_t y;
-  ProcessAnalog(mHadPositiveDetection, x, y);
+  ProcessAnalog(hadPositiveDetection, x, y);
   
-  bool button0Down = ProcessButton(mHadPositiveDetection, mHadButton0Down, mHadButton0Up, mButton0Down, mUpdatesSinceLastButton0Latch);
-  bool button1Down = ProcessButton(mHadPositiveDetection, mHadButton1Down, mHadButton1Up, mButton1Down, mUpdatesSinceLastButton1Latch);
+  bool button0Down = ProcessButton(hadPositiveDetection, mHadButton0Down, mHadButton0Up, mButton0Down, mUpdatesSinceLastButton0Latch);
+  bool button1Down = ProcessButton(hadPositiveDetection, mHadButton1Down, mHadButton1Up, mButton1Down, mUpdatesSinceLastButton1Latch);
 
   SendToJoystick(x, y, button0Down, button1Down);
+}
+
+bool TandyStick::HadPositiveDetection()
+{
+  // If no stick is connected, the 100 ohm resistor will pull the input up to 5v (read = 1023). 
+  // Threshold is an average of 1022.5. This allows for some of the reads to be below 1023.
+  long threshold = (((1022L << 1) + 1) * mNumUpdateTicks) >> 1;
+  return mAccumulatedDetectRead <= threshold; 
 }
 
 void TandyStick::ProcessAnalog(bool stickConnected, int16_t &xOut, int16_t &yOut)
